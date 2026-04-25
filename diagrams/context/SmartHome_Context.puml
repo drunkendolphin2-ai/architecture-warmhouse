@@ -3,7 +3,7 @@ title SmartHome Context Diagram
 
 top to bottom direction
 
-!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Context.puml
+!include ../libs/C4_Context.puml
 
 Person(user, "User", "A user of the smart home system")
 Person(employee, "Installation employee", "Employee installing devices")

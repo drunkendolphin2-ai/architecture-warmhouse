@@ -20,18 +20,16 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v2
         with:
-          java-version: '11'
+          java-version: '21'
           distribution: 'temurin'
 
       - name: Install PlantUML
-        run: sudo apt-get install plantuml
+        run: |
+           curl -L https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar -o plantuml.jar
 
       - name: Generate Diagrams
         run: |
-          plantuml diagrams/context/*.puml
-          plantuml diagrams/container/*.puml
-          plantuml diagrams/component/*.puml
-          plantuml diagrams/code/*.puml
+          java -jar plantuml.jar diagrams/**/*.puml
 
       - name: Commit Diagrams
         run: |

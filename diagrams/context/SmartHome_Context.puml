@@ -3,11 +3,11 @@ title SmartHome Context Diagram
 
 top to bottom direction
 
-!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Context.puml
 
 Person(user, "User", "A user of the smart home system")
 Person(employee, "Installation employee", "Employee installing devices")
-System(SmartHomeDevices, "Smart Home Devices", "System managing devices, heating control and temperature monitoring")
+System_Ext(SmartHomeDevices, "Smart Home Devices", "System managing devices, heating control and temperature monitoring")
 System(SmartHomeSystem, "Smart Home System", "Smart Home Devices")
 
 Rel(user, SmartHomeSystem, "Uses the system")

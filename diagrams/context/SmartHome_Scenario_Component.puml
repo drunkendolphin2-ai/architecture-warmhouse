@@ -1,0 +1,37 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Component diagram — Scenario Service
+
+Container(broker, "Kafka", "Шина событий")
+Container(deviceControl, "Device Control", "Go")
+ContainerDb(pgScenario, "PostgreSQL", "scenarios, executions")
+Container(apiGw, "API Gateway")
+
+
+Container_Boundary(scenarioSvc, "Scenario Service") {
+    Component(restApi, "REST API", "CRUD сценариев: POST /scenarios, GET /scenarios/{id} и т.д.")
+    Component(eventConsumer, "Event Consumer", "Читает telemetry.events")
+    Component(ruleValidator, "Rule Validator", "Проверяет условия сценариев (if-then)")
+    Component(actionExecutor, "Action Executor", "Выполняет действие: вызов Device Control")
+    Component(scenarioRepo, "Scenario Repository", "Доступ к сценариям в БД")
+    Component(historyRepo, "Execution History", "Лог выполнения сценариев")
+    Component(deviceClient, "Device Control Client", "REST-клиент к Device Control")
+}
+
+' CRUD путь
+Rel(apiGw, restApi, "REST", "HTTPS")
+Rel(restApi, scenarioRepo, "save / read")
+Rel(scenarioRepo, pgScenario, "SQL")
+
+' Путь исполнения
+Rel(broker, eventConsumer, "consume telemetry.events", "Kafka")
+Rel(eventConsumer, ruleValidator, "событие")
+Rel(ruleValidator, scenarioRepo, "получить правила для устройства")
+Rel(ruleValidator, actionExecutor, "правило сработало")
+Rel(actionExecutor, deviceClient, "вызвать команду")
+Rel(deviceClient, deviceControl, "HTTPS запрос", "JSON/HTTPS")
+Rel(actionExecutor, historyRepo, "записать выполнение")
+Rel(historyRepo, pgScenario, "SQL")
+
+@enduml

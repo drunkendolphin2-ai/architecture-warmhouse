@@ -20,14 +20,9 @@ Container_Boundary(warmHouse, "Тёплый дом") {
         ContainerDb(pgUser, "PostgreSQL", "users, homes")
     }
 
-    Container_Boundary(b_registry, "Device Registry") {
-        Container(deviceRegistry, "Device Registry", "Go", "Каталог устройств")
-        ContainerDb(pgDeviceRegistry, "PostgreSQL", "devices, bindings")
-    }
-
-    Container_Boundary(b_control, "Device Control") {
-        Container(deviceControl, "Device Control", "Go", "Команды устройствам")
-        ContainerDb(pgDeviceControl, "PostgreSQL", "commands history")
+    Container_Boundary(b_device, "Device") {
+        Container(deviceService, "Device Registry", "Go", "Управление устройствами")
+        ContainerDb(pgDevice, "PostgreSQL", "devices, bindings")
     }
 
     Container_Boundary(b_telemetry, "Telemetry") {
@@ -49,14 +44,12 @@ Rel(webApp, apiGw, "API запросы", "JSON/HTTPS")
 
 ' Запросы пользователей через Gateway
 Rel(apiGw, userService, "JSON/HTTPS")
-Rel(apiGw, deviceRegistry, "JSON/HTTPS")
-Rel(apiGw, deviceControl, "JSON/HTTPS")
+Rel(apiGw, deviceService, "JSON/HTTPS")
 Rel(apiGw, telemetryMonitoring, "JSON/HTTPS")
 Rel(apiGw, scenarioService, "JSON/HTTPS")
 
 ' Межсервисные запросы
-Rel(deviceControl, deviceRegistry, "Проверка устройства", "JSON/HTTPS")
-Rel(scenarioService, deviceControl, "Команда от сценария", "JSON/HTTPS")
+Rel(scenarioService, deviceService, "Команда от сценария", "JSON/HTTPS")
 
 ' Async через Kafka
 Rel(broker, telemetryIn, "чтение из telemetry.raw", "Kafka")
@@ -66,12 +59,11 @@ Rel(broker, scenarioService, "чтение из telemetry.events (триггер
 ' Устройства
 Rel(device, iotGw, "Телеметрия и команды", "JSON/HTTPS")
 Rel(iotGw, broker, "отправка в telemetry.raw", "Kafka")
-Rel(deviceControl, iotGw, "Запрос на выполнение команды к устройству", "JSON/HTTPS")
+Rel(deviceService, iotGw, "Запрос на выполнение команды к устройству", "JSON/HTTPS")
 
 ' БД
 Rel(userService, pgUser, "SQL")
-Rel(deviceRegistry, pgDeviceRegistry, "SQL")
-Rel(deviceControl, pgDeviceControl, "SQL")
+Rel(deviceService, pgDevice, "SQL")
 Rel(telemetryIn, tsdb, "INSERT", "SQL")
 Rel(telemetryMonitoring, tsdb, "SELECT", "SQL")
 Rel(scenarioService, pgScenario, "SQL")

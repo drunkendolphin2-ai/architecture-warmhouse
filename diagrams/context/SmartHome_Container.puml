@@ -1,0 +1,68 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Container diagram — "Тёплый дом" (To-Be)
+
+Person(user, "Пользователь", "Владелец умного дома")
+Person(specialist, "Специалист по установке", "Устанавливает устройство (As-Is, если необходимо)")
+
+System_Ext(device, "Умное устройство", "Выполняет определенные команды")
+
+Container_Boundary(warmHouse, "Тёплый дом") {
+    Container(webApp, "Web / Mobile App", "JS / iOS / Android", "Предоставляет интерфейс для взамодействия с устройствами и сценариями")
+    Container(apiGw, "API Gateway", "", "Роутинг")
+    Container(iotGw, "Devices Gateway", "", "Роутинг запросов от/к устройствам")
+
+    Container(userService, "User Service", "Go", "Пользователи и дома")
+    Container(deviceRegistry, "Device Registry", "Go", "Каталог устройств, привязка к домам")
+    Container(deviceControl, "Device Control", "Go", "Отправка команд")
+    Container(telemetryIn, "Telemetry Handler", "Go", "Приём потока телеметрии, валидация, запись")
+    Container(telemetryMonitoring, "Telemetry Monitoring", "Go", "Выдача истории и графиков")
+    Container(scenarioService, "Scenario Service", "Go", "Обработка сценариев")
+
+    ContainerDb(pgUser, "PostgreSQL", "users, homes")
+    ContainerDb(pgDeviceRegistry, "PostgreSQL", "devices, bindings")
+    ContainerDb(pgDeviceControl, "PostgreSQL", "commands history")
+    ContainerDb(tsdb, "Хранилище timeseries", "телеметрия (time-series)")
+    ContainerDb(pgScenario, "PostgreSQL", "scenarios, executions")
+
+    Container(broker, "Kafka", "Шина событий")
+}
+
+' Пользователи
+Rel(user, webApp, "Использует", "JSON/HTTPS")
+Rel(specialist, webApp, "Регистрирует устройства", "JSON/HTTPS")
+Rel(webApp, apiGw, "API запросы", "JSON/HTTPS")
+
+' Запросы пользователей через Gateway
+Rel(apiGw, userService, "JSON/HTTPS")
+Rel(apiGw, deviceRegistry, "JSON/HTTPS")
+Rel(apiGw, deviceControl, "JSON/HTTPS")
+Rel(apiGw, telemetryMonitoring, "JSON/HTTPS")
+Rel(apiGw, scenarioService, "JSON/HTTPS")
+
+' Межсервисные запросы
+Rel(deviceControl, deviceRegistry, "Проверка устройства", "JSON/HTTPS")
+Rel(scenarioService, deviceControl, "Команда от сценария", "JSON/HTTPS")
+
+' Async через Kafka
+Rel(broker, telemetryIn, "чтение из telemetry.raw", "Kafka")
+Rel(telemetryIn, broker, "отправка в telemetry.events", "Kafka")
+Rel(broker, scenarioService, "чтение из telemetry.events (триггер на запуск сценариев)", "Kafka")
+Rel(deviceRegistry, broker, "отправка в device.lifecycle", "Kafka")
+Rel(deviceControl, broker, "отправка в command.executed", "Kafka")
+
+' Устройства
+Rel(device, iotGw, "Телеметрия и команды", "JSON/HTTPS")
+Rel(iotGw, broker, "отправка в telemetry.raw", "Kafka")
+Rel(deviceControl, iotGw, "Запрос на выполнение команды к устройству", "JSON/HTTPS")
+
+' БД
+Rel(userService, pgUser, "SQL")
+Rel(deviceRegistry, pgDeviceRegistry, "SQL")
+Rel(deviceControl, pgDeviceControl, "SQL")
+Rel(telemetryIn, tsdb, "INSERT", "SQL")
+Rel(telemetryMonitoring, tsdb, "SELECT", "SQL")
+Rel(scenarioService, pgScenario, "SQL")
+
+@enduml

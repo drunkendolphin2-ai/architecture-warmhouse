@@ -78,6 +78,10 @@
     - контекст Управление пользователями и домами
     - контекст Управление доступами
 
+![Context](diagrams/context/SmartHome_Container.png)
+![Context](diagrams/context/SmartHome_Component.png)
+![Context](diagrams/context/SmartHome_Code.png)
+
 # Задание 3. Разработка ER-диаграммы
 
 Добавьте сюда ER-диаграмму. Она должна отражать ключевые сущности системы, их атрибуты и тип связей между ними.

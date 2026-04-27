@@ -65,7 +65,7 @@
     - контекст установка специалистом (As-Is)
     - контекст самостоятаельно подключение (To-Be)
 - Домен Программирования системы
-  - поддомен Управление сценарями
+  - поддомен Управление сценариями
     - контекст движок сценариев (создание, редактирование)
 - домен Мониторинг
   - поддомен Хранение телеметрии
@@ -77,8 +77,15 @@
     - контекст Управление пользователями и домами
     - контекст Управление доступами
 
+Диаграмма контейнера
 ![Context](diagrams/context/SmartHome_Container.png)
-![Context](diagrams/context/SmartHome_Component.png)
+Диаграмма компонента сценариев
+![Context](diagrams/context/SmartHome_Scenario_Component.png)
+Диаграмма компонента девайсов
+![Context](diagrams/context/SmartHome_Device_Component.png)
+Диаграмма компонента телеметрии
+![Context](diagrams/context/SmartHome_Telemetry_Component.png)
+Диаграмма кода
 ![Context](diagrams/context/SmartHome_Code.png)
 
 # Задание 3. Разработка ER-диаграммы

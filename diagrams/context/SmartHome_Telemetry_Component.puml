@@ -1,7 +1,7 @@
 @startuml
 !includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
 
-title Component diagram — Scenario Service
+title Component diagram — Telemetry Services
 
 ContainerDb(telemetryDb, "Timeseries DB", "telemetry")
 Container(broker, "Kafka", "Шина событий")

@@ -49,7 +49,7 @@ Rel(apiGw, telemetryMonitoring, "JSON/HTTPS")
 Rel(apiGw, scenarioService, "JSON/HTTPS")
 
 ' Межсервисные запросы
-Rel(scenarioService, deviceService, "Команда от сценария", "JSON/HTTPS")
+Rel(scenarioService, deviceService, "Команда от сценария/Запрос информации об устройстве", "JSON/HTTPS")
 
 ' Async через Kafka
 Rel(broker, telemetryIn, "чтение из telemetry.raw", "Kafka")

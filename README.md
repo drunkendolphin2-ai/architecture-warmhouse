@@ -86,7 +86,7 @@
 Диаграмма компонента телеметрии
 ![Context](diagrams/context/SmartHome_Telemetry_Component.png)
 Диаграмма кода
-![Context](diagrams/context/SmartHome_Code.png)
+![Context](diagrams/context/SmartHome_Scenario_Trigger_Code.png)
 
 # Задание 3. Разработка ER-диаграммы
 

@@ -1,0 +1,45 @@
+@startuml
+title SmartHome Scenario Trigger Code Diagram
+
+queue "Kafka telemetry.events" as Kafka
+
+box "Scenario Service" #LightGreen
+participant "Event Consumer" as Consumer
+participant "Rule Validator" as Validator
+participant "Scenario Repository" as ScenarioRepository
+participant "Action Executor" as Executor
+participant "Device Client" as DeviceClient
+participant "History Repository" as HistoryRepository
+end box
+
+database "PostgreSQL scenarios" as DB
+participant "Device Service" as DeviceService
+
+== 1. Получение события ==
+Kafka -> Consumer : Чтение события из telemetry.events\n{deviceId, metric, value}
+Consumer -> Validator : событие
+
+== 2. Поиск и проверка правил ==
+Validator -> ScenarioRepository : получить сценарии для устройства
+ScenarioRepository -> DB : получить сценарии для устройства
+DB --> ScenarioRepository : сценарии
+ScenarioRepository --> Validator : сценарии
+Validator -> Validator : сопоставить событие с триггерами
+
+alt событие не прошло валидацию по триггерам
+    Validator -> Validator : skip
+else валидация успешна
+    Validator -> Executor : выполнить действие
+
+    Executor -> Executor : сгенерировать уникальный requestId
+    Executor -> DeviceClient : вызвать команду
+    DeviceClient -> DeviceService : Вызов команду с уникальным requestId
+    DeviceService --> DeviceClient : 200 OK
+    DeviceClient --> Executor : ok
+
+    == 4. Запись истории ==
+    Executor -> HistoryRepository : записать выполнение
+    HistoryRepository -> DB : создать запись с выполнением запроса
+end
+
+@enduml

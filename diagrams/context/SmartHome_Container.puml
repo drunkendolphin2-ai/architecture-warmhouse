@@ -12,7 +12,7 @@ Container_Boundary(warmHouse, "Тёплый дом") {
 
     Container(webApp, "Web / Mobile App", "JS / iOS / Android", "UI пользователя")
     Container(apiGw, "API Gateway", "", "Роутинг, auth")
-    Container(iotGw, "Devices Gateway", "MQTT broker", "Мост между устройствами и системой")
+    Container(iotGw, "Devices Gateway", "", "Мост между устройствами и системой")
     Container(broker, "Kafka", "", "Шина событий")
 
     Container_Boundary(b_user, "User") {
@@ -21,7 +21,7 @@ Container_Boundary(warmHouse, "Тёплый дом") {
     }
 
     Container_Boundary(b_device, "Device") {
-        Container(deviceService, "Device Registry", "Go", "Управление устройствами")
+        Container(deviceService, "Device Service", "Go", "Управление устройствами")
         ContainerDb(pgDevice, "PostgreSQL", "devices, bindings")
     }
 

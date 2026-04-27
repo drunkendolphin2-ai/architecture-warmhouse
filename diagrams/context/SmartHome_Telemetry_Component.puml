@@ -9,15 +9,14 @@ Container(apiGw, "API Gateway")
 
 Container_Boundary(telemetryHandler, "Telemetry Handler") {
     Component(eventConsumer, "Event Consumer", "Читает telemetry.raw")
-    Component(telemetryValidator, "Telemetry Validator", "Проверяет условия сценариев (if-then)")
-    Component(telemetryWriter, "Telemetry Writer", "Выполняет действие: вызов Device Control")
-    Component(telemetryWritingRepo, "Telemetry Writing Repository", "Лог выполнения сценариев")
+    Component(telemetryValidator, "Telemetry Validator", "Проводит валидацию телеметрии по формату/данным")
+    Component(telemetryWriter, "Telemetry Writer", "Выполняет запись телеметрии в различные системы")
+    Component(telemetryWritingRepo, "Telemetry Writing Repository", "Выполняет запись телеметрии в БД")
     Component(eventProducer, "Event Producer", "Пишет в telemetry.events")
 }
 
 Container_Boundary(telemetryMonitoring, "Telemetry Monitoring") {
     Component(telemetryMonitoringApi, "REST API", "API для работы с телеметрией")
-    Component(telemetryReadingRepo, "Telemetry Reading Repository", "Телеметрия")
     Component(telemetryReadingRepo, "Telemetry Reading Repository", "Телеметрия")
 }
 

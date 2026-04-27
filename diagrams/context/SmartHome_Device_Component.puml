@@ -21,14 +21,19 @@ Container_Boundary(deviceSvc, "Device Service") {
     Component(deviceGwClient, "Device Gateway Client", "REST-клиент к Device Gateway")
 }
 
+' Общее
+Rel(apiGw, commandRestApi, "JSON/HTTPS")
+Rel(deviceGwClient, iotGw, "Отправка команды")
+
+' Работа с БД
+Rel(deviceRepo, pgDevice, "SQL")
+Rel(historyRepo, pgDevice, "SQL")
+
 ' CRUD путь устройства
 Rel(apiGw, deviceRestApi, "JSON/HTTPS")
 Rel(deviceRestApi, deviceHandler, "Событие")
 Rel(deviceHandler, deviceGwClient, "Запрос на проверку устройства")
 Rel(deviceHandler, deviceRepo, "Сохранить девайс/получить информацию/удалить")
-Rel(deviceRepo, pgDevice, "SQL")
-
-Rel(apiGw, commandRestApi, "JSON/HTTPS")
 
 ' Путь получения информации о командах
 Rel(commandRestApi, historyRepo, "Получить информацию о выполненных командах")
@@ -39,8 +44,6 @@ Rel(commandRestApi, commandValidator, "Событие")
 Rel(commandValidator, deviceRepo, "Получение информации об устройстве, валидация возможности запуска команды")
 Rel(commandValidator, commandExecutor, "Команда прошла валидацию")
 Rel(commandExecutor, deviceGwClient, "Отправка команды")
-Rel(deviceGwClient, iotGw, "Отправка команды")
 Rel(commandExecutor, historyRepo, "Сохранение результата выполнения команды")
-Rel(historyRepo, pgDevice, "SQL")
 
 @enduml

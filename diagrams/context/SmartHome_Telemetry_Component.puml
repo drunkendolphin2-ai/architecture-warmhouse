@@ -1,0 +1,40 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Component diagram — Scenario Service
+
+ContainerDb(telemetryDb, "Timeseries DB", "telemetry")
+Container(broker, "Kafka", "Шина событий")
+Container(apiGw, "API Gateway")
+
+Container_Boundary(telemetryHandler, "Telemetry Handler") {
+    Component(eventConsumer, "Event Consumer", "Читает telemetry.raw")
+    Component(telemetryValidator, "Telemetry Validator", "Проверяет условия сценариев (if-then)")
+    Component(telemetryWriter, "Telemetry Writer", "Выполняет действие: вызов Device Control")
+    Component(telemetryWritingRepo, "Telemetry Writing Repository", "Лог выполнения сценариев")
+    Component(eventProducer, "Event Producer", "Пишет в telemetry.events")
+}
+
+Container_Boundary(telemetryMonitoring, "Telemetry Monitoring") {
+    Component(telemetryMonitoringApi, "REST API", "API для работы с телеметрией")
+    Component(telemetryReadingRepo, "Telemetry Reading Repository", "Телеметрия")
+    Component(telemetryReadingRepo, "Telemetry Reading Repository", "Телеметрия")
+}
+
+' Работа с БД
+Rel(telemetryReadingRepo, telemetryDb, "Чтение")
+Rel(telemetryWritingRepo, telemetryDb, "Запись")
+
+' Запрос на информацию по телеметрии
+Rel(apiGw, telemetryMonitoringApi, "Запрос на телеметрию")
+Rel(telemetryMonitoringApi, telemetryReadingRepo, "Запрос на телеметрию")
+
+' Чтение и запись телеметриии
+Rel(broker, eventConsumer, "telemetry.raw")
+Rel(eventConsumer, telemetryValidator, "Событие")
+Rel(telemetryValidator, telemetryWriter, "Валидация прошла успешно")
+Rel(telemetryWriter, telemetryWritingRepo, "Запись")
+Rel(telemetryWriter, eventProducer, "Запись")
+Rel(eventProducer, broker, "telemetry.events")
+
+@enduml

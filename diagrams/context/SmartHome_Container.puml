@@ -28,7 +28,7 @@ Container_Boundary(warmHouse, "Тёплый дом") {
     Container_Boundary(b_telemetry, "Telemetry") {
         Container(telemetryIn, "Telemetry Handler", "Go", "Приём, валидация, запись")
         Container(telemetryMonitoring, "Telemetry Monitoring", "Go", "История и графики")
-        ContainerDb(tsdb, "TimeseriesDB", "телеметрия (time-series)")
+        ContainerDb(tsdb, "Postgres (Timescale)", "Телеметрия")
     }
 
     Container_Boundary(b_scenario, "Scenario") {

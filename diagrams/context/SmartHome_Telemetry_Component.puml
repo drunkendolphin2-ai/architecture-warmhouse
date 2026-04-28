@@ -3,7 +3,7 @@
 
 title Component diagram — Telemetry Services
 
-ContainerDb(telemetryDb, "Timeseries DB", "telemetry")
+ContainerDb(telemetryDb, "Postgres (Timescale)", "telemetry")
 Container(broker, "Kafka", "Шина событий")
 Container(apiGw, "API Gateway")
 

@@ -1,0 +1,129 @@
+@startuml
+title ER Diagram — "Тёплый дом"
+
+package UserService {
+    entity "User" {
+      * id : NUMBER
+      --
+      username : VARCHAR
+      email : VARCHAR
+      password : VARCHAR
+      created : TIMESTAMP
+      updated : TIMESTAMP
+    }
+
+    entity "House" {
+      * id : NUMBER
+      --
+      name : VARCHAR
+      address : VARCHAR
+      comment : VARCHAR
+      created : TIMESTAMP
+      updated : TIMESTAMP
+    }
+
+    entity "User_To_House" {
+      * house_id : NUMBER
+      * user_id : VARCHAR
+      --
+      role: VARCHAR
+      created : TIMESTAMP
+      updated : TIMESTAMP
+    }
+
+    User ||--o{ "User_To_House"
+    House ||--o{ "User_To_House"
+}
+
+package DeviceServices {
+    entity "Device_Type" {
+      * id : NUMBER
+      --
+      name : VARCHAR
+      category : VARCHAR
+      manufacturer  : VARCHAR
+      protocol : VARCHAR
+    }
+
+    entity "Module" {
+        * id : UUID <<PK>>
+        --
+        home_id: NUMBER
+        status: VARCHAR
+        name : VARCHAR
+    }
+
+    entity "Device" {
+      * id : UUID
+      --
+      type_id : VARCHAR
+      module_id : UUID
+      serial_number : VARCHAR
+      status : VARCHAR
+      registered_at: TIMESTAMP
+      last_status_at: TIMESTAMP
+    }
+
+    entity "Command_History" {
+      * id : NUMBER
+      --
+      device_id : UUID
+      request_id: UUID
+      command_type_id: NUMBER
+      action    : VARCHAR
+      params : JSONB
+      status : VARCHAR
+      executed_at  : VARCHAR
+      updated_at : VARCHAR
+    }
+
+    entity "Command_Type" {
+       * device_type_id : NUMBER
+       * name : VARCHAR
+       --
+       display_name : VARCHAR
+       params: JSONB
+    }
+
+
+    Device_Type ||--o{ Device
+    Device_Type ||--o{ Command_Type
+    Device ||--o{ Command_History
+    Command_Type ||--o{ Command_History
+    Module ||--o{ Device
+}
+
+package ScenarioServices {
+    entity "Scenario" {
+      * id : UUID
+      --
+      creator_id : NUMBER
+      name : VARCHAR
+      enabled : BOOLEAN
+      trigger : JSONB
+      actions : JSONB
+      created_at : TIMESTAMP
+    }
+
+    entity "Execution_Record" {
+      * id : UUID
+      --
+      scenario_id : UUID
+      triggered_at : TIMESTAMP
+      result : VARCHAR
+      error_message : TEXT
+    }
+
+    Scenario ||--o{ "Execution_Record"
+}
+
+package TelemetryServices {
+    entity "Telemetry" {
+      * device_id : UUID
+      * recorded_at: TIMESTAMP
+      * name: VARCHAR
+      --
+      value : DOUBLE
+    }
+}
+@enduml

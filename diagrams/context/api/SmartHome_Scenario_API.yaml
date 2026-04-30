@@ -1,0 +1,150 @@
+openapi: 3.0.3
+info:
+  title: SmartHome API — "Тёплый дом"
+  description: |
+    REST API экосистемы умного дома. Документирует ключевые эндпоинты Scenario Service
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/v1
+    description: Local development
+
+tags:
+  - name: Scenario Service
+    description: Сценарии автоматизации
+
+paths:
+  /scenarios:
+    post:
+      tags: [Scenario Service]
+      summary: Создать новый сценарий автоматизации
+      description: Создаёт правило автоматизации
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScenarioRequest'
+            examples:
+              heating_on_cold:
+                summary: Включить отопление при низкой температуре
+                value:
+                  name: "Отопление при холоде"
+                  enabled: true
+                  trigger:
+                    type: "telemetry"
+                    device_id: "7f3e9a2b-12d8-4a56-b9c3-8e1f5d7a2b91"
+                    metric: "temperature"
+                    operator: "<"
+                    threshold: 18.0
+                  actions:
+                    - type: "command"
+                      device_id: "9c4e1d3f-22a1-4f78-bc34-1d9e8f3a2c01"
+                      action: "turn_on"
+                      params: {}
+      responses:
+        '201':
+          description: Сценарий создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scenario'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          description: Устройство не принадлежит пользователю
+        '404':
+          description: Устройство, упомянутое в trigger или actions, не найдено
+
+components:
+  schemas:
+
+    ScenarioRequest:
+      type: object
+      required: [name, enabled, trigger, actions]
+      properties:
+        name:
+          type: string
+        enabled:
+          type: boolean
+        trigger:
+          $ref: '#/components/schemas/Trigger'
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Action'
+          minItems: 1
+
+    Trigger:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          enum: [telemetry, schedule]
+        device_id:
+          type: string
+          format: uuid
+        metric:
+          type: string
+        operator:
+          type: string
+          enum: ['<', '<=', '==', '>=', '>']
+        threshold:
+          type: number
+
+    Action:
+      type: object
+      required: [type, device_id, action]
+      properties:
+        type:
+          type: string
+          enum: [command]
+        device_id:
+          type: string
+          format: uuid
+        action:
+          type: string
+        params:
+          type: object
+
+    Scenario:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        owner_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        enabled:
+          type: boolean
+        trigger:
+          $ref: '#/components/schemas/Trigger'
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Action'
+        created_at:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          example: "validation_error"
+        message:
+          type: string
+          example: "Поле serial_number обязательно"
+
+  responses:
+    BadRequest:
+      description: Невалидный запрос
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

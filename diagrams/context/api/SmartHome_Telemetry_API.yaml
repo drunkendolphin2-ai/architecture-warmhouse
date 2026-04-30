@@ -1,0 +1,123 @@
+openapi: 3.0.3
+info:
+  title: SmartHome API — "Тёплый дом"
+  description: REST API экосистемы умного дома. Документирует ключевые эндпоинты Telemetry Service.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/v1
+    description: Local development
+
+tags:
+  - name: Telemetry Service
+    description: Телеметрия с устройств
+
+paths:
+
+  /telemetry:
+    get:
+      tags: [Telemetry Service]
+      summary: Получить историю телеметрии устройства
+      description: Возвращает временной ряд значений метрики устройства за указанный период.
+      parameters:
+        - name: device_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: metric
+          in: query
+          required: true
+          description: Имя метрики (temperature, humidity, power, ...)
+          schema:
+            type: string
+        - name: from
+          in: query
+          required: true
+          description: Начало периода (ISO 8601)
+          schema:
+            type: string
+            format: date-time
+          example: "2026-04-28T00:00:00Z"
+        - name: to
+          in: query
+          required: true
+          description: Конец периода (ISO 8601)
+          schema:
+            type: string
+            format: date-time
+          example: "2026-04-29T00:00:00Z"
+        - name: limit
+          in: query
+          description: Максимум точек на странице (по умолчанию 1000)
+          schema:
+            type: integer
+            default: 1000
+            maximum: 10000
+      responses:
+        '200':
+          description: История телеметрии
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TelemetrySeries'
+              examples:
+                temperature_24h:
+                  value:
+                    device_id: "sensor-1"
+                    metric: "temperature"
+                    points:
+                      - recorded_at: "2026-04-28T08:00:00Z"
+                        value: 21.3
+                      - recorded_at: "2026-04-28T08:01:00Z"
+                        value: 21.4
+                      - recorded_at: "2026-04-28T08:02:00Z"
+                        value: 21.5
+                    total: 1440
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Устройство не найдено
+
+components:
+  schemas:
+    TelemetrySeries:
+      type: object
+      properties:
+        device_id:
+          type: string
+          format: uuid
+        metric:
+          type: string
+        points:
+          type: array
+          items:
+            type: object
+            properties:
+              recorded_at:
+                type: string
+                format: date-time
+              value:
+                type: number
+        total:
+          type: integer
+          description: Общее число точек в периоде
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          example: "validation_error"
+        message:
+          type: string
+          example: "Поле serial_number обязательно"
+
+  responses:
+    BadRequest:
+      description: Невалидный запрос
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

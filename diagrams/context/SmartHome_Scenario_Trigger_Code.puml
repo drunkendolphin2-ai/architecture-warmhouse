@@ -15,11 +15,9 @@ end box
 database "PostgreSQL scenarios" as DB
 participant "Device Service" as DeviceService
 
-== 1. Получение события ==
 Kafka -> Consumer : Чтение события из telemetry.events\n{deviceId, metric, value}
 Consumer -> Validator : событие
 
-== 2. Поиск и проверка правил ==
 Validator -> ScenarioRepository : получить сценарии для устройства
 ScenarioRepository -> DB : получить сценарии для устройства
 DB --> ScenarioRepository : сценарии
@@ -37,7 +35,6 @@ else валидация успешна
     DeviceService --> DeviceClient : 200 OK
     DeviceClient --> Executor : ok
 
-    == 4. Запись истории ==
     Executor -> HistoryRepository : записать выполнение
     HistoryRepository -> DB : создать запись с выполнением запроса
 end

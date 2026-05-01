@@ -105,9 +105,17 @@
 
 - Между сервисами Сценариев и Устройств - синхронное взаимодействие, поскольку по результату команд нужен немедленный ответ.
 
-### 1. Документация API
+### 2. Документация API
 
-Здесь приложите ссылки на документацию API для микросервисов, которые вы спроектировали в первой части проектной работы. Для документирования используйте Swagger/OpenAPI или AsyncAPI.
+#### REST API
+
+- **Device Service:** [SmartHome_Device_API.yaml](diagrams/context/api/SmartHome_Device_API.yaml)
+- **Scenario Service:** [SmartHome_Scenario_API.yaml](diagrams/context/api/SmartHome_Scenario_API.yaml)
+- **Telemetry Service:** [SmartHome_Telemetry_API.yaml](diagrams/context/api/SmartHome_Telemetry_API.yaml)
+
+#### Async API
+
+- **Telemetry Events:** [SmartHome_Telemetry_Async_API.yaml](diagrams/context/api/SmartHome_Telemetry_Async_API.yaml)
 
 # Задание 5. Работа с docker и docker-compose
 

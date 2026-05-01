@@ -1,0 +1,221 @@
+openapi: 3.0.3
+info:
+  title: SmartHome API — "Тёплый дом"
+  description: |
+    REST API Device Service
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/v1
+    description: Local development
+
+tags:
+  - name: Device Service
+    description: Управление устройствами и командами
+
+paths:
+  /devices:
+    post:
+      tags: [Device Service]
+      description: Регистрация устройства пользователем
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceRegisterRequest'
+            examples:
+              relay:
+                summary: Регистрация реле освещения
+                value:
+                  serial_number: "TH-RELAY-A4F2C918"
+                  home_id: "550e8400-e29b-41d4-a716-446655440000"
+                  name: "Реле в гостиной"
+      responses:
+        '201':
+          description: Устройство зарегистрировано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+              examples:
+                created:
+                  value:
+                    id: "7f3e9a2b-12d8-4a56-b9c3-8e1f5d7a2b91"
+                    serial_number: "TH-RELAY-A4F2C918"
+                    home_id: "550e8400-e29b-41d4-a716-446655440000"
+                    device_type_id: "a1b2c3d4-..."
+                    name: "Реле в гостиной"
+                    status: "pending"
+                    registered_at: "2026-04-29T10:15:30Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Дом или тип устройства не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Устройство с таким серийником уже зарегистрировано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                duplicate:
+                  value:
+                    code: "device_already_registered"
+                    message: "Устройство с серийным номером TH-RELAY-A4F2C918 уже зарегистрировано"
+
+  /devices/{device_id}/command:
+    post:
+      tags: [Device Service]
+      summary: Отправить команду устройству
+      description: Отправляет команду устройству.
+      parameters:
+        - name: device_id
+          in: path
+          required: true
+          description: Уникальный идентификатор устройства
+          schema:
+            type: string
+            format: uuid
+          example: "8b2e7f3a-9c1d-4e2f-b6a8-3d5e9f1c7a2b"
+        - name: Request-Id
+          in: header
+          required: true
+          description: Уникальный UUID, защищающий от двойной отправки команды
+          schema:
+            type: string
+            format: uuid
+          example: "8b2e7f3a-9c1d-4e2f-b6a8-3d5e9f1c7a2b"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommandRequest'
+            examples:
+              turn_on:
+                summary: Включить реле
+                value:
+                  action: "turn_on"
+                  params: {}
+              set_temp:
+                summary: Установить температуру
+                value:
+                  action: "set_temperature"
+                  params:
+                    value: 22.5
+      responses:
+        '200':
+          description: Команда успешно выполнена устройством
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandResponse'
+              examples:
+                executed:
+                  value:
+                    command_id: "1a2b3c4d-..."
+                    status: "executed"
+                    executed_at: "2026-04-29T10:16:01Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Устройство не найдено
+        '422':
+          description: Action не поддерживается типом устройства или params не соответствуют схеме
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Устройство не ответило в отведённое время (timeout)
+
+components:
+  schemas:
+    DeviceRegisterRequest:
+      type: object
+      required: [serial_number, home_id]
+      properties:
+        serial_number:
+          type: string
+          description: Серийный номер с коробки
+          example: "TH-RELAY-A4F2C918"
+        home_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          description: Пользовательское имя устройства
+
+    Device:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        serial_number:
+          type: string
+        home_id:
+          type: string
+          format: uuid
+        device_type_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        status:
+          type: string
+          enum: [pending, active, offline, disabled]
+        registered_at:
+          type: string
+          format: date-time
+
+    CommandRequest:
+      type: object
+      required: [action]
+      properties:
+        action:
+          type: string
+          example: "turn_on"
+        params:
+          type: object
+          description: Параметры команды (структура зависит от CommandType)
+          example: {}
+
+    CommandResponse:
+      type: object
+      properties:
+        command_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [executed, failed, timeout]
+        executed_at:
+          type: string
+          format: date-time
+        error_message:
+          type: string
+          nullable: true
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          example: "validation_error"
+        message:
+          type: string
+          example: "Поле serial_number обязательно"
+
+  responses:
+    BadRequest:
+      description: Невалидный запрос
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

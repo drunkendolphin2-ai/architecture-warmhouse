@@ -1,0 +1,71 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Container diagram — "Тёплый дом" (To-Be)
+
+Person(user, "Пользователь", "Владелец умного дома")
+Person(specialist, "Специалист по установке", "Устанавливает устройство (As-Is, если необходимо)")
+
+System_Ext(device, "Умное устройство", "Выполняет определенные команды")
+
+Container_Boundary(warmHouse, "Тёплый дом") {
+
+    Container(webApp, "Web / Mobile App", "JS / iOS / Android", "UI пользователя")
+    Container(apiGw, "API Gateway", "", "Роутинг, auth")
+    Container(iotGw, "Devices Gateway", "", "Мост между устройствами и системой")
+    Container(broker, "Kafka", "", "Шина событий")
+
+    Container_Boundary(b_user, "User") {
+        Container(userService, "User Service", "Go", "Пользователи и дома")
+        ContainerDb(pgUser, "PostgreSQL", "users, homes")
+    }
+
+    Container_Boundary(b_device, "Device") {
+        Container(deviceService, "Device Service", "Go", "Управление устройствами")
+        ContainerDb(pgDevice, "PostgreSQL", "devices, bindings")
+    }
+
+    Container_Boundary(b_telemetry, "Telemetry") {
+        Container(telemetryIn, "Telemetry Handler", "Go", "Приём, валидация, запись")
+        Container(telemetryMonitoring, "Telemetry Monitoring", "Go", "История и графики")
+        ContainerDb(tsdb, "Postgres (Timescale)", "Телеметрия")
+    }
+
+    Container_Boundary(b_scenario, "Scenario") {
+        Container(scenarioService, "Scenario Service", "Go", "Сценарии")
+        ContainerDb(pgScenario, "PostgreSQL", "scenarios, executions")
+    }
+}
+
+' Пользователи
+Rel(user, webApp, "Использует", "JSON/HTTPS")
+Rel(specialist, webApp, "Регистрирует устройства", "JSON/HTTPS")
+Rel(webApp, apiGw, "API запросы", "JSON/HTTPS")
+
+' Запросы пользователей через Gateway
+Rel(apiGw, userService, "JSON/HTTPS")
+Rel(apiGw, deviceService, "JSON/HTTPS")
+Rel(apiGw, telemetryMonitoring, "JSON/HTTPS")
+Rel(apiGw, scenarioService, "JSON/HTTPS")
+
+' Межсервисные запросы
+Rel(scenarioService, deviceService, "Команда от сценария/Запрос информации об устройстве", "JSON/HTTPS")
+
+' Async через Kafka
+Rel(broker, telemetryIn, "чтение из telemetry.raw", "Kafka")
+Rel(telemetryIn, broker, "отправка в telemetry.events", "Kafka")
+Rel(broker, scenarioService, "чтение из telemetry.events (триггер на запуск сценариев)", "Kafka")
+
+' Устройства
+Rel(device, iotGw, "Телеметрия и команды", "JSON/HTTPS")
+Rel(iotGw, broker, "отправка в telemetry.raw", "Kafka")
+Rel(deviceService, iotGw, "Запрос на выполнение команды к устройству", "JSON/HTTPS")
+
+' БД
+Rel(userService, pgUser, "SQL")
+Rel(deviceService, pgDevice, "SQL")
+Rel(telemetryIn, tsdb, "INSERT", "SQL")
+Rel(telemetryMonitoring, tsdb, "SELECT", "SQL")
+Rel(scenarioService, pgScenario, "SQL")
+
+@enduml

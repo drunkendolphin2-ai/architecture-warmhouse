@@ -1,0 +1,49 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Component diagram — Device Service
+
+ContainerDb(pgDevice, "PostgreSQL", "Devices, execution history")
+Container(scenarioSvc, "Scenario service")
+Container(apiGw, "API Gateway")
+Container(iotGw, "Devices Gateway", "", "Мост между устройствами и системой")
+
+
+Container_Boundary(deviceSvc, "Device Service") {
+    Component(deviceRestApi, "REST API", "CRUD устройств: POST /devices, GET /devices/{id} и т.д.")
+    Component(deviceRepo, "Device Repository", "Доступ к девайсам в БД")
+    Component(deviceHandler, "Device Handler", "Обработчик девайсов")
+
+    Component(commandRestApi, "REST API", "CRUD команд")
+    Component(commandValidator, "Command Handler", "Валидатор команд")
+    Component(commandExecutor, "Command Executor", "Обработчик команд")
+    Component(historyRepo, "Execution History Repository", "Лог выполнения команд")
+    Component(deviceGwClient, "Device Gateway Client", "REST-клиент к Device Gateway")
+}
+
+' Общее
+Rel(apiGw, commandRestApi, "JSON/HTTPS")
+Rel(deviceGwClient, iotGw, "Отправка команды")
+
+' Работа с БД
+Rel(deviceRepo, pgDevice, "SQL")
+Rel(historyRepo, pgDevice, "SQL")
+
+' CRUD путь устройства
+Rel(apiGw, deviceRestApi, "JSON/HTTPS")
+Rel(deviceRestApi, deviceHandler, "Событие")
+Rel(deviceHandler, deviceGwClient, "Запрос на проверку устройства")
+Rel(deviceHandler, deviceRepo, "Сохранить девайс/получить информацию/удалить")
+
+' Путь получения информации о командах
+Rel(commandRestApi, historyRepo, "Получить информацию о выполненных командах")
+
+' Путь исполнения команд
+Rel(scenarioSvc, commandRestApi, "JSON/HTTPS")
+Rel(commandRestApi, commandValidator, "Событие")
+Rel(commandValidator, deviceRepo, "Получение информации об устройстве, валидация возможности запуска команды")
+Rel(commandValidator, commandExecutor, "Команда прошла валидацию")
+Rel(commandExecutor, deviceGwClient, "Отправка команды")
+Rel(commandExecutor, historyRepo, "Сохранение результата выполнения команды")
+
+@enduml

@@ -100,13 +100,11 @@ paths:
               turn_on:
                 summary: Включить реле
                 value:
-                  device_id: "7f3e9a2b-12d8-4a56-b9c3-8e1f5d7a2b91"
                   action: "turn_on"
                   params: {}
               set_temp:
                 summary: Установить температуру
                 value:
-                  device_id: "9c4e1d3f-22a1-4f78-bc34-1d9e8f3a2c01"
                   action: "set_temperature"
                   params:
                     value: 22.5

@@ -24,7 +24,7 @@ package UserService {
 
     entity "User_To_House" {
       * house_id : NUMBER
-      * user_id : VARCHAR
+      * user_id : NUMBER
       --
       role: VARCHAR
       created : TIMESTAMP
@@ -73,8 +73,8 @@ package DeviceServices {
       action    : VARCHAR
       params : JSONB
       status : VARCHAR
-      executed_at  : VARCHAR
-      updated_at : VARCHAR
+      executed_at  : TIMESTAMP
+      updated_at : TIMESTAMP
     }
 
     entity "Command_Type" {

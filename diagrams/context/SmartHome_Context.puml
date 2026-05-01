@@ -8,7 +8,7 @@ top to bottom direction
 Person(user, "User", "A user of the smart home system")
 Person(employee, "Installation employee", "Employee installing devices")
 System_Ext(SmartHomeDevices, "Smart Home Devices", "System managing devices, heating control and temperature monitoring")
-System(SmartHomeSystem, "Smart Home System", "Smart Home Devices")
+System(SmartHomeSystem, "Smart Home System", "System managing UI and backend of Smart Home")
 
 Rel(user, SmartHomeSystem, "Uses the system")
 Rel(employee,SmartHomeDevices,"Installing devices")
